@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
@@ -16,6 +16,7 @@ import { format, isSameDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import useStreakData from '../hooks/useStreakData';
+import useWeeklyLifecycle from '../hooks/useWeeklyLifecycle';
 import { getTaskDate, isTaskOverdue, isTaskToday, getCurrentWeekDays } from '../utils/dateHelpers';
 
 const AnimatedCounter = ({ value }) => (
@@ -31,7 +32,7 @@ const AnimatedCounter = ({ value }) => (
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
-  const [tasks, setTasks] = useState([]);
+  const [allTasks, setAllTasks] = useState([]); // All tasks including archived
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -59,7 +60,7 @@ export default function Dashboard() {
       querySnapshot.forEach((doc) => {
         tasksData.push({ id: doc.id, ...doc.data() });
       });
-      setTasks(tasksData);
+      setAllTasks(tasksData);
       setLoading(false);
 
       setSelectedTask(prevSelected => {
@@ -76,6 +77,12 @@ export default function Dashboard() {
       unsubscribeTasks();
     };
   }, [currentUser]);
+
+  // Run the weekly lifecycle hook silently
+  useWeeklyLifecycle(currentUser, allTasks);
+
+  // Exclude archived tasks from the main dashboard
+  const tasks = useMemo(() => allTasks.filter(t => !t.isArchived), [allTasks]);
 
   const streakData = useStreakData(tasks);
 

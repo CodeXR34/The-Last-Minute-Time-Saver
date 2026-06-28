@@ -77,7 +77,7 @@ export default function Navbar({ currentStreak = 0 }) {
                 <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors text-sm">Dashboard</Link>
                 <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors text-sm">Tasks</Link>
                 <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors text-sm">Streaks</Link>
-                <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors text-sm">Insights</Link>
+                <Link to="/insights" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors text-sm">Insights</Link>
               </div>
             )}
 
@@ -213,6 +213,13 @@ export default function Navbar({ currentStreak = 0 }) {
                     className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   >
                     Streaks
+                  </Link>
+                  <Link 
+                    to="/insights" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Insights
                   </Link>
                   
                   <div className="h-px bg-gray-100 dark:bg-slate-800 my-2 mx-2"></div>

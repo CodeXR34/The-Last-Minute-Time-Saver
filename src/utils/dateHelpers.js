@@ -76,3 +76,14 @@ export const getCurrentWeekDays = () => {
   }
   return days;
 };
+
+// Generates a week ID string based on the Monday of the given date's week (e.g. "2026-06-22")
+export const getWeekId = (date) => {
+  const start = startOfWeek(date, { weekStartsOn: 1 });
+  return format(start, 'yyyy-MM-dd');
+};
+
+export const getCurrentWeekId = () => {
+  return getWeekId(new Date());
+};
+
