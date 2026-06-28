@@ -9,6 +9,7 @@ import { getSmartDateLabel, isTaskToday, isTaskOverdue } from '../utils/dateHelp
 import { useToast } from '../contexts/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logDecision, EVENT_TYPES } from '../services/decisionLogService';
+import confetti from 'canvas-confetti';
 
 // --- Subcomponents ---
 
@@ -489,6 +490,12 @@ export default function TaskCard({ task, isSelected, onClick, onEdit }) {
       const isNewlyCompleted = newStatus === 'Completed' && task.status !== 'Completed';
 
       if (isNewlyCompleted) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#4E8B7C', '#7E65A3', '#D08C38', '#D95D5D']
+        });
         // Handle Calendar Sync
         const token = sessionStorage.getItem('googleCalendarToken');
         // --- TEMPORARILY DISABLED CALENDAR SYNC TO AVOID OAUTH WARNING ---

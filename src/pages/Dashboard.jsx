@@ -5,7 +5,9 @@ import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Navigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import StreakTracker from '../components/StreakTracker';
+
+import ConsistencyHeatmap from '../components/dashboard/ConsistencyHeatmap';
+import VitalStats from '../components/dashboard/VitalStats';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
 import DecisionLog from '../components/DecisionLog';
@@ -35,7 +37,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskToEdit, setTaskToEdit] = useState(null);
-  
+
   // New States
   const [selectedDate, setSelectedDate] = useState(null);
   const [weekDays, setWeekDays] = useState([]);
@@ -59,7 +61,7 @@ export default function Dashboard() {
       });
       setTasks(tasksData);
       setLoading(false);
-      
+
       setSelectedTask(prevSelected => {
         if (!prevSelected) return null;
         const updatedTask = tasksData.find(t => t.id === prevSelected.id);
@@ -82,7 +84,7 @@ export default function Dashboard() {
   }
 
   // Derived Task Categorization
-  const baseTasks = selectedDate 
+  const baseTasks = selectedDate
     ? tasks.filter(t => t.deadline && isSameDay(getTaskDate(t.deadline), selectedDate))
     : tasks;
 
@@ -131,9 +133,9 @@ export default function Dashboard() {
   completedTasks.sort((a, b) => (getTaskDate(b.completedAt) || 0) - (getTaskDate(a.completedAt) || 0));
 
   // Today's Summary Computing
-  const totalToday = todayTasks.length + tasks.filter(t => t.status === 'Completed' && isTaskToday({...t, status: 'Pending'})).length; 
+  const totalToday = todayTasks.length + tasks.filter(t => t.status === 'Completed' && isTaskToday({ ...t, status: 'Pending' })).length;
   // We count completed today by pretending they are pending to pass the isTaskToday check.
-  const completedToday = tasks.filter(t => t.status === 'Completed' && isTaskToday({...t, status: 'Pending'})).length;
+  const completedToday = tasks.filter(t => t.status === 'Completed' && isTaskToday({ ...t, status: 'Pending' })).length;
   const pendingToday = todayTasks.length;
   const todayProgressPercent = totalToday === 0 ? 0 : Math.round((completedToday / totalToday) * 100);
 
@@ -161,8 +163,8 @@ export default function Dashboard() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
             >
-              <TaskCard 
-                task={task} 
+              <TaskCard
+                task={task}
                 isSelected={selectedTask?.id === task.id}
                 onClick={() => setSelectedTask(task)}
                 onEdit={(task) => {
@@ -189,9 +191,9 @@ export default function Dashboard() {
       <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-green-400/10 dark:bg-green-600/10 rounded-full blur-3xl pointer-events-none mix-blend-multiply dark:mix-blend-lighten hidden dark:block"></div>
 
       <Navbar currentStreak={streakData.calculatedCurrentStreak} />
-      
+
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8 relative z-10">
-        
+
         {/* Left Content Column */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-end mb-6">
@@ -212,31 +214,12 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* 1. Existing Statistics Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#FDF8F1]/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-[#E6D8C8] dark:border-slate-800 border-l-4 border-l-indigo-500 p-4 flex items-center gap-4 transition-all">
-              <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                <Clock className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Tasks</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  <AnimatedCounter value={tasks.filter(t=>t.status === 'Pending').length} />
-                </p>
-              </div>
-            </div>
-            <div className="bg-[#FDF8F1]/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-[#E6D8C8] dark:border-slate-800 border-l-4 border-l-green-500 p-4 flex items-center gap-4 transition-all">
-              <div className="h-10 w-10 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed Tasks</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  <AnimatedCounter value={tasks.filter(t=>t.status === 'Completed').length} />
-                </p>
-              </div>
-            </div>
-          </div>
+
+
+          <VitalStats
+            stats={streakData.stats}
+            currentStreak={streakData.calculatedCurrentStreak}
+          />
 
           {/* 2. Calendar Strip */}
           <div className="bg-[#FDF8F1] dark:bg-slate-900 rounded-2xl p-4 border border-[#E6D8C8] dark:border-slate-800 mb-6 flex justify-between overflow-x-auto gap-2 shadow-sm">
@@ -247,14 +230,13 @@ export default function Dashboard() {
               const allCompleted = allTasksCompletedForDate(day);
 
               return (
-                <button 
+                <button
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(isSelected ? null : day)}
-                  className={`flex flex-col items-center min-w-[3.5rem] py-2 px-1 rounded-xl transition-colors ${
-                    isSelected ? 'bg-indigo-600 text-white shadow-md' :
-                    isToday ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 
-                    'hover:bg-[#F2ECE4] dark:hover:bg-slate-800 text-[#7B6B5B] dark:text-gray-400'
-                  }`}
+                  className={`flex flex-col items-center min-w-[3.5rem] py-2 px-1 rounded-xl transition-colors ${isSelected ? 'bg-indigo-600 text-white shadow-md' :
+                      isToday ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' :
+                        'hover:bg-[#F2ECE4] dark:hover:bg-slate-800 text-[#7B6B5B] dark:text-gray-400'
+                    }`}
                 >
                   <span className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-80">{format(day, 'EEE')}</span>
                   <span className="text-lg font-bold">{format(day, 'd')}</span>
@@ -272,64 +254,56 @@ export default function Dashboard() {
             <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto" aria-label="Tabs">
               <button
                 onClick={() => { setActiveTab('dashboard'); setSelectedTask(null); }}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'dashboard'
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'dashboard'
                     ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                     : 'border-transparent text-[#7B6B5B] dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
-                }`}
+                  }`}
               >
                 Dashboard
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${
-                  activeTab === 'dashboard' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
-                }`}>
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
+                  }`}>
                   <AnimatedCounter value={todayTasks.length} />
                 </span>
               </button>
-              
+
               <button
                 onClick={() => { setActiveTab('pending'); setSelectedTask(null); }}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'pending'
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'pending'
                     ? 'border-orange-500 text-orange-600 dark:text-orange-400'
                     : 'border-transparent text-[#7B6B5B] dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
-                }`}
+                  }`}
               >
                 Pending
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${
-                  activeTab === 'pending' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
-                }`}>
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'pending' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
+                  }`}>
                   <AnimatedCounter value={overdueTasks.length} />
                 </span>
               </button>
 
               <button
                 onClick={() => { setActiveTab('future'); setSelectedTask(null); }}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'future'
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'future'
                     ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                     : 'border-transparent text-[#7B6B5B] dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
-                }`}
+                  }`}
               >
                 Future
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${
-                  activeTab === 'future' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
-                }`}>
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'future' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
+                  }`}>
                   <AnimatedCounter value={upcomingTasks.length} />
                 </span>
               </button>
 
               <button
                 onClick={() => { setActiveTab('completed'); setSelectedTask(null); }}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'completed'
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'completed'
                     ? 'border-green-500 text-green-600 dark:text-green-400'
                     : 'border-transparent text-[#7B6B5B] dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-slate-600'
-                }`}
+                  }`}
               >
                 Completed
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${
-                  activeTab === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
-                }`}>
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-[#E6D8C8] dark:bg-slate-800 text-[#7B6B5B] dark:text-gray-300'
+                  }`}>
                   <AnimatedCounter value={completedTasks.length} />
                 </span>
               </button>
@@ -359,14 +333,14 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex-1 max-w-xs w-full">
                     <div className="flex justify-between text-xs font-bold text-[#7B6B5B] dark:text-gray-400 mb-2">
                       <span>Progress</span>
                       <span>{todayProgressPercent}%</span>
                     </div>
                     <div className="h-2 w-full bg-[#E6D8C8] dark:bg-slate-700 rounded-full overflow-hidden">
-                      <motion.div 
+                      <motion.div
                         className="h-full bg-green-500 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${todayProgressPercent}%` }}
@@ -377,9 +351,9 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* Mobile Streak Tracker */}
-              <div className="block lg:hidden mb-8">
-                <StreakTracker streakData={streakData} />
+              {/* Mobile Consistency Heatmap */}
+              <div className="block lg:hidden mb-8 overflow-x-auto">
+                <ConsistencyHeatmap weeksData={streakData.weeksData} />
               </div>
 
               {/* 🔥 Today's Tasks */}
@@ -418,7 +392,7 @@ export default function Dashboard() {
                   </div>
                   <h3 className="text-lg font-bold text-green-800 dark:text-green-300 mb-1">🎉 Great work!</h3>
                   <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                    You have no overdue tasks.<br/>Keep your consistency streak alive.
+                    You have no overdue tasks.<br />Keep your consistency streak alive.
                   </p>
                 </div>
               )}
@@ -462,20 +436,20 @@ export default function Dashboard() {
 
         {/* Right Columns (Desktop Only) */}
         <div className="hidden lg:flex lg:w-80 flex-shrink-0 lg:mt-0 flex-col gap-6 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto pb-8 custom-scrollbar">
-          <StreakTracker streakData={streakData} />
+          <ConsistencyHeatmap weeksData={streakData.weeksData} />
           <DecisionLog />
         </div>
       </main>
 
       <Footer />
 
-      <TaskModal 
-        isOpen={isModalOpen} 
+      <TaskModal
+        isOpen={isModalOpen}
         taskToEdit={taskToEdit}
         onClose={() => {
           setIsModalOpen(false);
           setTaskToEdit(null);
-        }} 
+        }}
       />
     </div>
   );

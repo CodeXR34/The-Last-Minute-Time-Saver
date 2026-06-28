@@ -20,7 +20,7 @@ export const triggerTestEmail = async (uid, userEmail, userName, templateType = 
         'Content-Type': 'text/plain;charset=utf-8', // Bypass CORS preflight
       },
       body: JSON.stringify({
-        action: 'sendTestEmail',
+        action: 'auto',
         templateType: templateType,
         uid: uid,
         email: userEmail,
