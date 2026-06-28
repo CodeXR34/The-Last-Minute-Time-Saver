@@ -315,33 +315,56 @@ export default function Dashboard() {
             <>
               {/* Today's Summary */}
               {!selectedDate && (
-                <div className="bg-white dark:bg-slate-800/80 rounded-2xl p-5 border border-[#E6D8C8] dark:border-slate-700 mb-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center shrink-0">
-                      <BarChart2 className="h-6 w-6" />
+                <div className="bg-white dark:bg-slate-800/90 rounded-[20px] p-5 sm:p-6 border border-[#E6D8C8]/80 dark:border-slate-700/80 mb-6 shadow-sm flex flex-col gap-6 sm:gap-7 transition-colors">
+                  {/* Header Row */}
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center shrink-0">
+                      <BarChart2 className="h-5 w-5" />
                     </div>
-                    <div>
-                      <h2 className="text-base font-bold text-[#3B2F2F] dark:text-white flex items-center gap-2">
-                        Today's Summary
-                      </h2>
-                      <div className="flex items-center gap-3 text-sm text-[#7B6B5B] dark:text-gray-400 mt-1 font-medium">
-                        <span>{totalToday} Tasks</span>
-                        <span>&bull;</span>
-                        <span className="text-green-600 dark:text-green-400">{completedToday} Completed</span>
-                        <span>&bull;</span>
-                        <span>{pendingToday} Remaining</span>
-                      </div>
+                    <h2 className="text-lg sm:text-xl font-extrabold text-[#3B2F2F] dark:text-white tracking-tight">
+                      Today's Summary
+                    </h2>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 divide-x divide-gray-100 dark:divide-slate-700/60">
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">
+                        {totalToday}
+                      </span>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-1 sm:mt-1.5 truncate w-full max-w-full">
+                        Tasks
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 leading-tight">
+                        {completedToday}
+                      </span>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-1 sm:mt-1.5 truncate w-full max-w-full">
+                        Completed
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-2xl sm:text-3xl font-bold text-orange-500 dark:text-orange-400 leading-tight">
+                        {pendingToday}
+                      </span>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-1 sm:mt-1.5 truncate w-full max-w-full">
+                        Remaining
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex-1 max-w-xs w-full">
-                    <div className="flex justify-between text-xs font-bold text-[#7B6B5B] dark:text-gray-400 mb-2">
-                      <span>Progress</span>
-                      <span>{todayProgressPercent}%</span>
+                  {/* Progress Section */}
+                  <div className="mt-1">
+                    <div className="flex justify-between items-center mb-2.5">
+                      <span className="uppercase tracking-wider text-[11px] sm:text-xs font-bold text-[#7B6B5B] dark:text-gray-400">Progress</span>
+                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">{todayProgressPercent}%</span>
                     </div>
-                    <div className="h-2 w-full bg-[#E6D8C8] dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2.5 w-full bg-gray-100 dark:bg-slate-700/50 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-green-500 rounded-full"
+                        className="h-full bg-emerald-500 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${todayProgressPercent}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}

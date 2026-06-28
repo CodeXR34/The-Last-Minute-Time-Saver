@@ -16,6 +16,17 @@ export default function Navbar({ currentStreak = 0 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+        setIsDropdownOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -37,11 +48,21 @@ export default function Navbar({ currentStreak = 0 }) {
     <>
       <nav className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border-b-0 sticky top-0 z-40 transition-colors duration-200 shadow-sm relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1px] after:bg-gradient-to-r after:from-indigo-500 after:via-primary-500 after:to-green-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-16 relative z-50">
             
-            {/* Left: Logo */}
+            {/* Left: Menu & Logo */}
             <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-indigo-600 dark:text-indigo-500 mr-2" />
+              {/* Mobile Menu Toggle */}
+              {currentUser && (
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="md:hidden mr-3 p-2 -ml-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-full transition-colors focus:outline-none"
+                  aria-label="Toggle mobile menu"
+                >
+                  <Menu className="h-6 w-6" />
+                </button>
+              )}
+              <CheckCircle className="h-6 w-6 text-indigo-600 dark:text-indigo-500 mr-2 hidden sm:block" />
               <span className="font-extrabold text-xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-primary-600 dark:from-indigo-400 dark:to-primary-400 tracking-tight hidden sm:block">
                 Last Minute Life Saver
               </span>
@@ -100,13 +121,13 @@ export default function Navbar({ currentStreak = 0 }) {
 
               {currentUser && (
                 <div className="relative ml-2">
-                  <button 
+                  <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 focus:outline-none"
                   >
-                    <img 
-                      src={currentUser?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`} 
-                      alt="Profile" 
+                    <img
+                      src={currentUser?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`}
+                      alt="Profile"
                       className="h-8 w-8 rounded-full border-2 border-indigo-200 dark:border-indigo-800 transition-transform hover:scale-105"
                     />
                   </button>
@@ -114,7 +135,7 @@ export default function Navbar({ currentStreak = 0 }) {
                   {/* Avatar Dropdown */}
                   <AnimatePresence>
                     {isDropdownOpen && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -128,13 +149,13 @@ export default function Navbar({ currentStreak = 0 }) {
                         <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2">
                           <User className="h-4 w-4" /> Profile
                         </button>
-                        <button 
+                        <button
                           onClick={() => { setIsSettingsOpen(true); setIsDropdownOpen(false); }}
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2"
                         >
                           <Settings className="h-4 w-4" /> Settings
                         </button>
-                        <button 
+                        <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 flex items-center gap-2"
                         >
@@ -145,43 +166,72 @@ export default function Navbar({ currentStreak = 0 }) {
                   </AnimatePresence>
                 </div>
               )}
-
-              {/* Mobile Menu Toggle */}
-              {currentUser && (
-                <button 
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="md:hidden ml-2 p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                >
-                  {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                </button>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Nav Floating Dropdown */}
         <AnimatePresence>
           {isMobileMenuOpen && currentUser && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden border-t border-gray-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md overflow-hidden"
-            >
-              <div className="px-4 py-3 space-y-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full text-sm font-medium w-max">
-                    <Flame className="h-4 w-4 fill-orange-500" /> {currentStreak} Day Streak
-                  </div>
-                  <button className="p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 rounded-full">
-                    <Bell className="h-5 w-5" />
+            <>
+              {/* Dimmer Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
+              />
+              
+              {/* Premium Floating Card */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed top-16 left-4 w-[280px] sm:w-[300px] origin-top-left bg-white dark:bg-slate-900 rounded-[20px] shadow-2xl border border-gray-100 dark:border-slate-800 z-50 md:hidden flex flex-col overflow-hidden"
+              >
+                <div className="p-2 space-y-1">
+                  <Link 
+                    to="/dashboard" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/dashboard" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Tasks
+                  </Link>
+                  <Link 
+                    to="/dashboard" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Streaks
+                  </Link>
+                  
+                  <div className="h-px bg-gray-100 dark:bg-slate-800 my-2 mx-2"></div>
+                  
+                  <button 
+                    onClick={() => { setIsSettingsOpen(true); setIsMobileMenuOpen(false); }} 
+                    className="w-full text-left px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Profile Settings
+                  </button>
+                  <button 
+                    onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} 
+                    className="w-full text-left px-4 py-3 rounded-xl text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    Logout
                   </button>
                 </div>
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-800">Dashboard</Link>
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900">Tasks</Link>
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900">Streaks</Link>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </nav>

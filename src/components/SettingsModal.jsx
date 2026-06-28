@@ -219,7 +219,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                         </label>
                       </div>
 
-                      <div className="pt-4 flex justify-between items-center border-t border-gray-200 dark:border-slate-700">
+                      <div className="pt-4 flex justify-between items-center border-t border-gray-200 dark:border-slate-700 gap-[0.8rem]">
                         <button 
                           onClick={handleSendTestEmail}
                           disabled={isSendingTest}
