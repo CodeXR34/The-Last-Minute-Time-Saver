@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { db, functions } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
+import { triggerTestEmail } from '../services/emailService';
 
 const DEFAULT_EMAIL_SETTINGS = {
   enabled: false,
@@ -105,12 +105,11 @@ export default function SettingsModal({ isOpen, onClose }) {
   const handleSendTestEmail = async () => {
     setIsSendingTest(true);
     try {
-      const sendTestEmailFn = httpsCallable(functions, 'sendTestEmail');
-      await sendTestEmailFn();
-      addToast('Test email sent! Check your inbox.', 'success');
+      await triggerTestEmail(currentUser.uid, currentUser.email, currentUser.displayName || 'User');
+      addToast('Test email triggered via GAS! Check your inbox shortly.', 'success');
     } catch (error) {
       console.error("Error sending test email:", error);
-      addToast('Failed to send test email. Ensure your backend is configured.', 'error');
+      addToast('Failed to trigger test email. Check your .env config.', 'error');
     } finally {
       setIsSendingTest(false);
     }
